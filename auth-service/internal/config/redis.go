@@ -2,8 +2,9 @@ package config
 
 import (
 	"auth-service/internal/environment"
-	"github.com/gin-gonic/gin"
 	"sync"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/redis/go-redis/v9"
 )

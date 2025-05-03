@@ -3,7 +3,6 @@ package server
 import (
 	"auth-service/internal/config"
 	"auth-service/internal/controller"
-	"auth-service/internal/environment"
 	repository "auth-service/internal/repositories/impl"
 	service "auth-service/internal/services/impl"
 	"log"
@@ -14,7 +13,6 @@ import (
 )
 
 func LoadConfig(ctx *gin.Context) {
-	environment.InitConfig()
 	if err := config.InitDB(); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}

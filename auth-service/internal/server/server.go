@@ -15,6 +15,7 @@ type Server struct {
 }
 
 func NewServer() *http.Server {
+	environment.InitConfig()
 	log.Println("Server is running on port:", environment.PORT)
 
 	NewServer := &Server{
