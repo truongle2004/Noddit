@@ -1,0 +1,62 @@
+version: "3"
+networks:
+  ec_network:
+    driver: bridge
+
+services:
+  redis:
+    container_name: redis
+    image: 'redis:7.0'
+    volumes:
+      - "./volumes/redis/data:/data"
+    ports:
+      - "6379:6379"
+    networks:
+      - ec_network
+
+  zookeeper:
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:${KAFKA_VERSION:-latest}
+    user: "0:0"
+    hostname: zookeeper
+    restart: always
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 3
+      ZOOKEEPER_SERVERS: "zookeeper:2888:3888"
+      KAFKA_OPTS: "-Dzookeeper.4lw.commands.whitelist=ruok"
+    volumes:
+      - "./volumes/zookeeper/data:/var/lib/zookeeper/data"
+      - "./volumes/zookeeper/log:/var/lib/zookeeper/log"
+    networks:
+      - ec_network
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:${KAFKA_VERSION:-latest}
+    user: "0:0"
+    hostname: kafka
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "19092:19092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,LISTENER_LOCAL://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_COMPRESSION_TYPE: producer
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    volumes:
+      - "./volumes/kafka/data:/var/lib/kafka/data"
+    networks:
+      - ec_network
