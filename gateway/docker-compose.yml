@@ -5,8 +5,7 @@ services:
       dockerfile: Dockerfile
       target: prod
     restart: unless-stopped
-    ports:
-      - ${PORT}:${PORT}
     environment:
-      APP_ENV: ${APP_ENV}
-      PORT: ${PORT}
+      APP_NAME: ${APP_NAME}
+      CONFIG_URL: ${CONFIG_URL}
+      APP_PROFILE: ${APP_PROFILE}
