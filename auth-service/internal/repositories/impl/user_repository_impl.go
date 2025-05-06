@@ -29,7 +29,7 @@ func (a *UserRepositoryImpl) GetUserByID(ctx context.Context, userID string) (*d
 func (a *UserRepositoryImpl) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var user domain.User
 	a.db.Model(&domain.User{}).
-		Select("password", "salt", "id", "status").
+		Select("password", "salt", "id", "status", "email", "username").
 		Where("email = ?", email).
 		Preload("Roles", func(db *gorm.DB) *gorm.DB {
 			return db.Select("name")

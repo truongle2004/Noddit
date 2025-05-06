@@ -3,6 +3,7 @@ package server
 import (
 	"auth-service/internal/config"
 	"auth-service/internal/controller"
+	"auth-service/internal/helper"
 	repository "auth-service/internal/repositories/impl"
 	service "auth-service/internal/services/impl"
 	"log"
@@ -10,27 +11,32 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/truongle2004/service-context/middleware"
 )
 
-func LoadConfig(ctx *gin.Context) {
-	if err := config.InitDB(); err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
-	}
+func (s *Server) RegisterRoutes() http.Handler {
+	r := gin.Default()
+
+	r.Use(middleware.ResponseFormatterMiddleware())
+	r.Use(cors.New(config.CorsConfig()))
+
+	helper.InitJwtHelper()
 
 	if err := config.InitDB(); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
-	if err := config.InitRedis(ctx); err != nil {
+	if err := config.InitDB(); err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+
+	if err := config.InitRedis(); err != nil {
 		log.Fatalf("Failed to initialize Redis: %v", err)
 	}
 
 	if err := config.InitRBAC(); err != nil {
 		log.Fatalf("Failed to initialize RBAC: %v", err)
 	}
-}
-
-func initServerServices(r *gin.Engine) {
 
 	redisSvc := service.NewRedisService(config.RedisClient)
 	casbinSvc := service.NewCasbinService(config.RbacEnforcer)
@@ -44,18 +50,5 @@ func initServerServices(r *gin.Engine) {
 	authController.RegisterRoutes(r)
 	userController.RegisterRoutes(r)
 
-}
-
-func (s *Server) RegisterRoutes() http.Handler {
-	r := gin.Default()
-
-	r.Use(cors.New(config.CorsConfig()))
-
-	r.Use(func(ctx *gin.Context) {
-		LoadConfig(ctx)
-		ctx.Next()
-	})
-
-	initServerServices(r)
 	return r
 }

@@ -8,6 +8,7 @@ import (
 
 	"auth-service/internal/constant"
 	domain "auth-service/internal/domain/models"
+	"auth-service/internal/dto/request"
 	requestDto "auth-service/internal/dto/request"
 	"auth-service/internal/dto/response"
 	"auth-service/internal/helper"
@@ -41,19 +42,7 @@ func NewAuthService(userRepo repositories.UserRepository,
 	}
 }
 
-func (u *AuthServiceImpl) Login(c *gin.Context) {
-	var loginDto requestDto.LoginDto
-
-	if err := c.ShouldBindJSON(&loginDto); err != nil {
-		helper.ResponseServerError(c, "Bin json data failed", err)
-		return
-	}
-
-	if err := loginDto.Validate(); err != nil {
-		c.JSON(http.StatusBadRequest, core.ErrBadRequest.WithError(err.Error()))
-		return
-	}
-
+func (u *AuthServiceImpl) Login(c *gin.Context, loginDto *request.LoginDto) {
 	val, err := u.redisSvc.Get(c, loginDto.Email)
 
 	if errors.Is(err, redis.Nil) {
@@ -129,14 +118,7 @@ func (u *AuthServiceImpl) Login(c *gin.Context) {
 	}
 }
 
-func (u *AuthServiceImpl) Register(c *gin.Context) {
-	var registerDto requestDto.RegisterDto
-
-	if err := c.ShouldBindJSON(&registerDto); err != nil {
-		helper.ResponseServerError(c, "error bind json: "+err.Error(), errors.New("register_failed"))
-		return
-	}
-
+func (u *AuthServiceImpl) Register(c *gin.Context, registerDto *requestDto.RegisterDto) {
 	if _, err := u.redisSvc.Get(c, registerDto.Email); !errors.Is(err, redis.Nil) {
 		c.JSON(http.StatusConflict, core.ErrConflict.
 			WithError("Email is already taken"))
@@ -156,12 +138,6 @@ func (u *AuthServiceImpl) Register(c *gin.Context) {
 
 	if err := u.redisSvc.Set(c, registerDto.Username, registerDto.Username, 0); err != nil {
 		helper.ResponseServerError(c, "Set username to redis failed", err)
-		return
-	}
-
-	if err := registerDto.Validate(); err != nil {
-		c.JSON(http.StatusUnauthorized, core.ErrUnauthorized.
-			WithError(err.Error()))
 		return
 	}
 
@@ -244,4 +220,8 @@ func (u *AuthServiceImpl) CheckEmail(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusAccepted, gin.H{})
+}
+
+func (u *AuthServiceImpl) RefreshToken(ctx *gin.Context) {
+	helper.RefreshToken(ctx)
 }

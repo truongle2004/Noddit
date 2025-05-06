@@ -2,9 +2,8 @@ package config
 
 import (
 	"auth-service/internal/environment"
+	"context"
 	"sync"
-
-	"github.com/gin-gonic/gin"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -15,10 +14,11 @@ var (
 )
 
 // InitRedis initializes the Redis client using singleton pattern
-func InitRedis(ctx *gin.Context) error {
+func InitRedis() error {
 	var initErr error
 
 	redisOnce.Do(func() {
+		ctx := context.Background()
 		RedisClient = redis.NewClient(&redis.Options{
 			Addr: environment.RedisAddr,
 		})
