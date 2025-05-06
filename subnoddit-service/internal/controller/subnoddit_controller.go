@@ -2,11 +2,13 @@ package controller
 
 import (
 	"net/http"
+	"subnoddit-service/internal/dtos"
+
+	"subnoddit-service/internal/dtos/request"
+	"subnoddit-service/internal/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/truongle2004/service-context/core"
-	"subnoddit-service/internal/dtos/request"
-	"subnoddit-service/internal/services"
 )
 
 type CommunityController struct {
@@ -18,7 +20,7 @@ func NewCommunityController(subNodditSvc services.SubrodditService) CommunityCon
 }
 
 func (a *CommunityController) RegisterRoutes(r *gin.Engine) {
-	v1 := r.Group(core.V1 + "/auth/community")
+	v1 := r.Group(core.V1 + "/subnoddit-service/community")
 	{
 		v1.POST("/create", a.CreateCommunity)
 		v1.PUT("/update", a.UpdateCommunity)
@@ -32,16 +34,24 @@ func (a *CommunityController) RegisterRoutes(r *gin.Engine) {
 }
 
 func (a *CommunityController) CreateCommunity(ctx *gin.Context) {
-	var req request.CreateCommunityRequest
+	var req dtos.CommunityDto
+	creatorID := ctx.GetHeader("X-Creator-ID")
+
+	if creatorID == "" {
+		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithDetail("error", "Creator ID is required"))
+		return
+	}
+
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithDetail("error", "Invalid request body"))
 		return
 	}
+
 	if err := req.Validate(); err != nil {
 		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithDetail("error", err.Error()))
 		return
 	}
-	a.subNodditSvc.CreateCommunity(ctx, &req)
+	a.subNodditSvc.CreateCommunity(ctx, &req, &creatorID)
 }
 
 func (a *CommunityController) UpdateCommunity(ctx *gin.Context) {

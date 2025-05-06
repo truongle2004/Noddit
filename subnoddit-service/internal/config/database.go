@@ -49,7 +49,7 @@ func InitDB() error {
 			return
 		}
 
-		if err := db.AutoMigrate(&models.Community{}, &models.CommunityMember{}); err != nil {
+		if err := db.AutoMigrate(&models.Community{}, &models.CommunityMember{}, &models.Rule{}); err != nil {
 			initErr = fmt.Errorf("❌ Failed to auto migrate: %v", err)
 			return
 		}

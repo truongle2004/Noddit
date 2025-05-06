@@ -1,12 +1,15 @@
 package services
 
 import (
-	"github.com/gin-gonic/gin"
+	"subnoddit-service/internal/dtos"
 	"subnoddit-service/internal/dtos/request"
+
+	"github.com/gin-gonic/gin"
 )
 
 type SubrodditService interface {
-	CreateCommunity(ctx *gin.Context, req *request.CreateCommunityRequest)
+	UploadCommunityImage(ctx *gin.Context)
+	CreateCommunity(ctx *gin.Context, req *dtos.CommunityDto, createId *string)
 	UpdateCommunity(ctx *gin.Context, req *request.UpdateCommunityRequest)
 	GetCommunityById(ctx *gin.Context, communityId *string)
 	ListCommunities(ctx *gin.Context)

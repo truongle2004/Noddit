@@ -8,18 +8,21 @@ import (
 	svc "subnoddit-service/internal/services/impl"
 
 	"github.com/gin-contrib/cors"
+	"github.com/truongle2004/service-context/middleware"
+
 	"github.com/gin-gonic/gin"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := gin.Default()
 
+	r.Use(middleware.ResponseFormatterMiddleware())
+	r.Use(cors.New(config.CorsConfig()))
+
 	subNodditRepo := repo.NewSubredditRepository(config.DbInstance)
 	subNodditSvc := svc.NewCommunityService(subNodditRepo)
 	subNodditCtrl := controller.NewCommunityController(subNodditSvc)
 	subNodditCtrl.RegisterRoutes(r)
-
-	r.Use(cors.New(config.CorsConfig()))
 
 	return r
 }

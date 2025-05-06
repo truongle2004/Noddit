@@ -1,21 +1,25 @@
-package request
+package dtos
 
 import (
 	"errors"
 	"fmt"
+	"time"
 )
 
-type CreateCommunityRequest struct {
-	Name         string                 `json:"name" binding:"required,alphanum,min=3,max=100"`
-	Title        string                 `json:"title" binding:"omitempty,max=255"`
-	Description  string                 `json:"description"`
-	Rules        map[string]interface{} `json:"rules"`
-	Type         string                 `json:"type" binding:"omitempty,oneof=public private restricted"`
-	BannerImage  string                 `json:"banner_image"`
-	ProfileImage string                 `json:"profile_image"`
+type CommunityDto struct {
+	Name         string    `json:"name" binding:"required,alphanum,min=3,max=100"`
+	Title        string    `json:"title" binding:"omitempty,max=255"`
+	Description  string    `json:"description"`
+	Rules        []RuleDTO `json:"rules"`
+	Type         string    `json:"type" binding:"omitempty,oneof=public private restricted"`
+	BannerImage  string    `json:"banner_image"`
+	ProfileImage string    `json:"profile_image"`
+	CreatorId    string    `json:"creator_id"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-func (r *CreateCommunityRequest) Validate() error {
+func (r *CommunityDto) Validate() error {
 	if r.Name == "" {
 		return errors.New("name is required")
 	}
@@ -33,6 +37,16 @@ func (r *CreateCommunityRequest) Validate() error {
 	}
 	if r.ProfileImage != "" && len(r.ProfileImage) > 255 {
 		return fmt.Errorf("profile_image must be less than or equal to 255 characters (got %d)", len(r.ProfileImage))
+	}
+
+	if len(r.Rules) > 0 && len(r.Rules) < 9 {
+		for _, rule := range r.Rules {
+			if err := rule.Validate(); err != nil {
+				return err
+			}
+		}
+	} else {
+		return fmt.Errorf("A community must have at least 1 and at most 8 rules")
 	}
 	return nil
 }

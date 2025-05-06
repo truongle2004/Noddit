@@ -117,6 +117,8 @@ github.com/truongle2004/service-context v1.0.18 h1:EimttBZ3y5oQih3UXUGMnwyfgU57B
 github.com/truongle2004/service-context v1.0.18/go.mod h1:oBQo5NyXPx+NJsoI5/gKKkcENUnT1ySfvj5dZk/LZkQ=
 github.com/truongle2004/service-context v1.0.19 h1:c5QbV5OjH95Ilg0lcVAF2wjU32gAVjMxo/9xs5VS4+g=
 github.com/truongle2004/service-context v1.0.19/go.mod h1:oBQo5NyXPx+NJsoI5/gKKkcENUnT1ySfvj5dZk/LZkQ=
+github.com/truongle2004/service-context v1.0.29 h1:oXw3HruF5nEfzCnJdaKy7g3Yug/5XfEIAxd0xJEL2UU=
+github.com/truongle2004/service-context v1.0.29/go.mod h1:oBQo5NyXPx+NJsoI5/gKKkcENUnT1ySfvj5dZk/LZkQ=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65EE=

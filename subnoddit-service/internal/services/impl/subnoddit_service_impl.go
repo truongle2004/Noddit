@@ -3,6 +3,7 @@ package impl
 import (
 	"net/http"
 	"subnoddit-service/internal/domain/models"
+	"subnoddit-service/internal/dtos"
 	"subnoddit-service/internal/dtos/request"
 	"subnoddit-service/internal/repositories"
 
@@ -18,11 +19,27 @@ func NewCommunityService(db repositories.SubredditRepository) *CommunityServiceI
 	return &CommunityServiceImpl{db: db}
 }
 
-func (s *CommunityServiceImpl) CreateCommunity(ctx *gin.Context, req *request.CreateCommunityRequest) {
+func (s *CommunityServiceImpl) CreateCommunity(ctx *gin.Context, req *dtos.CommunityDto, createId *string) {
+	// TODO: check creatorId
 
+	var rules []models.Rule
+	for _, rule := range req.Rules {
+		rules = append(rules, models.Rule{
+			CommunityID: createId,
+			Title:       &rule.Title,
+			Description: &rule.Description,
+			Position:    &rule.Position,
+		})
+	}
 	community := &models.Community{
-		Name:        req.Name,
-		Description: req.Description,
+		Name:         &req.Name,
+		Title:        &req.Title,
+		Description:  &req.Description,
+		Rules:        rules,
+		Type:         &req.Type,
+		BannerImage:  &req.BannerImage,
+		ProfileImage: &req.BannerImage,
+		CreatorID:    createId,
 	}
 
 	if err := s.db.CreateCommunity(community); err != nil {
@@ -30,15 +47,24 @@ func (s *CommunityServiceImpl) CreateCommunity(ctx *gin.Context, req *request.Cr
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, community)
+	communityDto := &dtos.CommunityDto{
+		Name:         *community.Name,
+		Title:        *community.Title,
+		Description:  *community.Description,
+		Rules:        req.Rules,
+		Type:         *community.Type,
+		BannerImage:  *community.BannerImage,
+		ProfileImage: *community.ProfileImage,
+		CreatorId:    *community.CreatorID,
+		CreatedAt:    community.CreatedAt,
+		UpdatedAt:    community.UpdatedAt,
+	}
+
+	ctx.JSON(http.StatusCreated, communityDto)
 }
 
 func (s *CommunityServiceImpl) UpdateCommunity(ctx *gin.Context, req *request.UpdateCommunityRequest) {
 	community := &models.Community{}
-
-	community.ID = req.ID
-	community.Name = *req.Name
-	community.Description = *req.Description
 
 	if err := s.db.UpdateCommunity(community); err != nil {
 		ctx.JSON(http.StatusInternalServerError, core.ErrInternalServerError.WithDetail("error", "Failed to update community: "+err.Error()))
@@ -51,7 +77,7 @@ func (s *CommunityServiceImpl) UpdateCommunity(ctx *gin.Context, req *request.Up
 func (s *CommunityServiceImpl) GetCommunityById(ctx *gin.Context, communityId *string) {
 	community, err := s.db.GetCommunityByID(communityId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, core.ErrInternalServerError.WithDetail("error", "Failed to get community: "+err.Error()))
+		ctx.Error(core.ErrInternalServerError.WithDetail("error", err.Error()))
 		return
 	}
 
@@ -61,7 +87,7 @@ func (s *CommunityServiceImpl) GetCommunityById(ctx *gin.Context, communityId *s
 func (s *CommunityServiceImpl) ListCommunities(ctx *gin.Context) {
 	communities, err := s.db.ListCommunities()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, core.ErrInternalServerError.WithDetail("error", "Failed to list communities: "+err.Error()))
+		ctx.Error(core.ErrInternalServerError.WithDetail("error", err.Error()))
 		return
 	}
 
@@ -69,14 +95,8 @@ func (s *CommunityServiceImpl) ListCommunities(ctx *gin.Context) {
 }
 
 func (s *CommunityServiceImpl) JoinCommunity(ctx *gin.Context, req *request.JoinCommunityRequest) {
-
-	if err := req.Validate(); err != nil {
-		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithDetail("error", err.Error()))
-		return
-	}
-
 	if err := s.db.JoinCommunity(&req.UserID, &req.CommunityID); err != nil {
-		ctx.JSON(http.StatusInternalServerError, core.ErrInternalServerError.WithDetail("error", "Failed to join community: "+err.Error()))
+		ctx.Error(core.ErrInternalServerError.WithDetail("error", "Failed to join community: "+err.Error()))
 		return
 	}
 
@@ -85,10 +105,7 @@ func (s *CommunityServiceImpl) JoinCommunity(ctx *gin.Context, req *request.Join
 
 func (s *CommunityServiceImpl) LeaveCommunity(ctx *gin.Context, req *request.LeaveCommunityRequest) {
 	if err := s.db.LeaveCommunity(&req.UserID, &req.CommunityID); err != nil {
-		ctx.JSON(http.StatusInternalServerError,
-			core.
-				ErrInternalServerError.
-				WithDetail("error", "Failed to leave community: "+err.Error()))
+		ctx.Error(core.ErrInternalServerError.WithDetail("error", err.Error()))
 		return
 	}
 
@@ -98,7 +115,7 @@ func (s *CommunityServiceImpl) LeaveCommunity(ctx *gin.Context, req *request.Lea
 func (s *CommunityServiceImpl) GetCommunityMemberCount(ctx *gin.Context, communityId *string) {
 	cnt, err := s.db.GetNumberOfMembersInCommunity(communityId)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, core.ErrInternalServerError.WithDetail("error", err.Error()))
+		ctx.Error(core.ErrInternalServerError.WithDetail("error", err.Error()))
 		return
 	}
 
@@ -109,10 +126,11 @@ func (s *CommunityServiceImpl) IsUserMember(ctx *gin.Context, req *request.IsUse
 
 	isMember, err := s.db.IsUserMember(&req.UserID, &req.CommunityID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, core.ErrInternalServerError.
-			WithDetail("error", "Failed to check user member: "+err.Error()))
+		ctx.Error(core.ErrInternalServerError.WithDetail("error", err.Error()))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"is_member": isMember})
+	ctx.JSON(http.StatusOK, gin.H{
+		"is_member": isMember,
+	})
 }
