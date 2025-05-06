@@ -36,7 +36,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r := gin.Default()
 	r.Use(cors.New(config.CorsConfig()))
 
-	rbacSvc := impl.NewRBACService(config.EnforcerInstance)
+	// rbacSvc := impl.NewRBACService(config.EnforcerInstance)
 	client := initRedisConnection()
 	redisSvc := impl.NewRedisService(client)
 	middleware.NewAccountMiddleware(redisSvc)
@@ -46,11 +46,21 @@ func (s *Server) RegisterRoutes() http.Handler {
 		authGroup.Any("/auth/*proxyPath",
 			proxy.ReserveProxy(environment.AuthServiceRoute))
 
-		authGroup.Any("/users/*proxyPath",
+		// authGroup.Any("/users/*proxyPath",
+		// 	middleware.AuthMiddleware(),
+		// 	middleware.ValidTokenMiddleware(),
+		// 	middleware.RBACMiddleware(rbacSvc),
+		// 	proxy.ReserveProxy(environment.AuthServiceRoute))
+	}
+
+	subnoddit := r.Group(constant.V1)
+	{
+		subnoddit.Any("/subnoddit-service/*proxyPath",
 			middleware.AuthMiddleware(),
 			middleware.ValidTokenMiddleware(),
-			middleware.RBACMiddleware(rbacSvc),
-			proxy.ReserveProxy(environment.AuthServiceRoute))
+			//middleware.RBACMiddleware(rbacSvc),
+			proxy.ReserveProxy(environment.SubnodditServiceRoute))
+
 	}
 
 	profileGroup := r.Group(constant.V1)

@@ -28,8 +28,9 @@ var (
 )
 
 var (
-	AuthServiceRoute    string
-	ProfileServiceRoute string
+	AuthServiceRoute      string
+	ProfileServiceRoute   string
+	SubnodditServiceRoute string
 )
 
 const (
@@ -65,6 +66,7 @@ func InitConfigServer() {
 	// Routes
 	AuthServiceRoute = v.GetString(rootRoute + ".auth-service")
 	ProfileServiceRoute = v.GetString(rootRoute + ".profile-service")
+	SubnodditServiceRoute = v.GetString(rootRoute + ".subnoddit-service")
 
 	DbHost = v.GetString(rootEnv + ".DB_HOST")
 	DbPort = v.GetInt(rootEnv + ".DB_PORT")
