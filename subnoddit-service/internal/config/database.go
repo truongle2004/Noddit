@@ -26,6 +26,18 @@ var (
 			COMMENT ON TABLE community_members IS 'Table that records user memberships (follows) of communities';
 			COMMENT ON COLUMN community_members.joined_at IS 'Timestamp when the user joined the community';
 		`
+
+	CommunityRule = `
+			COMMENT ON TABLE rules IS 'Table that records rules for communities';
+			COMMENT ON COLUMN rules.title IS 'Rule title';
+			COMMENT ON COLUMN rules.description IS 'Rule description';
+			COMMENT ON COLUMN rules.position IS 'Rule position';
+	`
+
+	CommunityTopic = `
+			COMMENT ON TABLE topics IS 'Table that records topics for communities';
+			COMMENT ON COLUMN topics.name IS 'Topic name';
+	`
 )
 
 var (

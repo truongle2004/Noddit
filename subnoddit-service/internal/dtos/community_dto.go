@@ -17,6 +17,7 @@ type CommunityDto struct {
 	CreatorId    string    `json:"creator_id"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
+	// TODO: add topic dto
 }
 
 func (r *CommunityDto) Validate() error {

@@ -6,6 +6,6 @@ services:
       target: prod
     restart: unless-stopped
     environment:
-      APP_NAME: ${APP_NAME}
-      CONFIG_URL: ${CONFIG_URL}
-      APP_PROFILE: ${APP_PROFILE}
+      # APP_NAME: ${APP_NAME}
+      # CONFIG_URL: ${CONFIG_URL}
+      # APP_PROFILE: ${APP_PROFILE}

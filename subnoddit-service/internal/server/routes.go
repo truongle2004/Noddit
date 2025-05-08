@@ -19,9 +19,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Use(middleware.ResponseFormatterMiddleware())
 	r.Use(cors.New(config.CorsConfig()))
 
+	imageSvc := svc.NewImageService()
 	subNodditRepo := repo.NewSubredditRepository(config.DbInstance)
-	subNodditSvc := svc.NewCommunityService(subNodditRepo)
-	subNodditCtrl := controller.NewCommunityController(subNodditSvc)
+	subNodditSvc := svc.NewCommunityService(subNodditRepo, imageSvc)
+	subNodditCtrl := controller.NewCommunityController(subNodditSvc, imageSvc)
 	subNodditCtrl.RegisterRoutes(r)
 
 	return r
