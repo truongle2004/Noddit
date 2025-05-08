@@ -55,10 +55,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	subnoddit := r.Group(constant.V1)
 	{
-		subnoddit.Any("/subnoddit-service/*proxyPath",
+		subnoddit.Any("/subnoddit-service/community/*proxyPath",
 			middleware.AuthMiddleware(),
 			middleware.ValidTokenMiddleware(),
 			//middleware.RBACMiddleware(rbacSvc),
+			proxy.ReserveProxy(environment.SubnodditServiceRoute))
+		subnoddit.Any("/subnoddit-service/image/*proxyPath",
 			proxy.ReserveProxy(environment.SubnodditServiceRoute))
 
 	}

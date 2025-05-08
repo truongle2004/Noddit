@@ -20,6 +20,9 @@ func LoadConfig() {
 	if err := config.InitDB(); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
+	if err := config.ImageUploadConfig(); err != nil {
+		log.Println("There are errors during creating new upload folder")
+	}
 }
 
 func NewServer() *http.Server {
