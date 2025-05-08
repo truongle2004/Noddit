@@ -9,7 +9,6 @@ import (
 	"auth-service/internal/constant"
 	domain "auth-service/internal/domain/models"
 	"auth-service/internal/dto/request"
-	requestDto "auth-service/internal/dto/request"
 	"auth-service/internal/dto/response"
 	"auth-service/internal/helper"
 	"auth-service/internal/repositories"
@@ -42,7 +41,20 @@ func NewAuthService(userRepo repositories.UserRepository,
 	}
 }
 
-func (u *AuthServiceImpl) Login(c *gin.Context, loginDto *request.LoginDto) {
+func (u *AuthServiceImpl) Login(c *gin.Context) {
+
+	var loginDto request.LoginDto
+
+	if err := c.ShouldBindJSON(&loginDto); err != nil {
+		helper.ResponseServerError(c, "Bin json data failed", err)
+		return
+	}
+
+	if err := loginDto.Validate(); err != nil {
+		c.JSON(http.StatusBadRequest, core.ErrBadRequest.WithError(err.Error()))
+		return
+	}
+
 	val, err := u.redisSvc.Get(c, loginDto.Email)
 
 	if errors.Is(err, redis.Nil) {
@@ -118,38 +130,49 @@ func (u *AuthServiceImpl) Login(c *gin.Context, loginDto *request.LoginDto) {
 	}
 }
 
-func (u *AuthServiceImpl) Register(c *gin.Context, registerDto *requestDto.RegisterDto) {
-	if _, err := u.redisSvc.Get(c, registerDto.Email); !errors.Is(err, redis.Nil) {
-		c.JSON(http.StatusConflict, core.ErrConflict.
+func (u *AuthServiceImpl) Register(ctx *gin.Context) {
+	var registerDto request.RegisterDto
+
+	if err := ctx.ShouldBindJSON(&registerDto); err != nil {
+		helper.ResponseServerError(ctx, "error bind json: "+err.Error(), errors.New("register_failed"))
+		return
+	}
+
+	if err := registerDto.Validate(); err != nil {
+		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithError(err.Error()))
+		return
+	}
+	if _, err := u.redisSvc.Get(ctx, registerDto.Email); !errors.Is(err, redis.Nil) {
+		ctx.JSON(http.StatusConflict, core.ErrConflict.
 			WithError("Email is already taken"))
 		return
 	}
 
-	if _, err := u.redisSvc.Get(c, registerDto.Username); !errors.Is(err, redis.Nil) {
-		c.JSON(http.StatusConflict, core.ErrConflict.
+	if _, err := u.redisSvc.Get(ctx, registerDto.Username); !errors.Is(err, redis.Nil) {
+		ctx.JSON(http.StatusConflict, core.ErrConflict.
 			WithError("Username is already taken"))
 		return
 	}
 
-	if err := u.redisSvc.Set(c, registerDto.Email, string(core.ACTIVE), 0); err != nil {
-		helper.ResponseServerError(c, "Set email to redis failed", err)
+	if err := u.redisSvc.Set(ctx, registerDto.Email, string(core.ACTIVE), 0); err != nil {
+		helper.ResponseServerError(ctx, "Set email to redis failed", err)
 		return
 	}
 
-	if err := u.redisSvc.Set(c, registerDto.Username, registerDto.Username, 0); err != nil {
-		helper.ResponseServerError(c, "Set username to redis failed", err)
+	if err := u.redisSvc.Set(ctx, registerDto.Username, registerDto.Username, 0); err != nil {
+		helper.ResponseServerError(ctx, "Set username to redis failed", err)
 		return
 	}
 
 	salt, err := helper.RandomStr(constant.SaltLimit)
 	if err != nil {
-		helper.ResponseServerError(c, "Failed to get salt", err)
+		helper.ResponseServerError(ctx, "Failed to get salt", err)
 		return
 	}
 
 	hashedPassword, err := helper.HashPassword(salt, registerDto.Password)
 	if err != nil {
-		helper.ResponseServerError(c, "Failed to hash password", err)
+		helper.ResponseServerError(ctx, "Failed to hash password", err)
 		return
 	}
 
@@ -162,9 +185,9 @@ func (u *AuthServiceImpl) Register(c *gin.Context, registerDto *requestDto.Regis
 		Salt:      salt,
 	}
 
-	if err := u.userRepo.Create(c.Request.Context(), &user); err != nil {
+	if err := u.userRepo.Create(ctx.Request.Context(), &user); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			c.JSON(http.StatusConflict, core.ErrConflict.
+			ctx.JSON(http.StatusConflict, core.ErrConflict.
 				WithError("Username or email already exists. Please try another email or username").
 				WithReason("Failed to create new user").
 				WithDetail("error", err.Error()))
@@ -172,7 +195,7 @@ func (u *AuthServiceImpl) Register(c *gin.Context, registerDto *requestDto.Regis
 		}
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
+	ctx.JSON(http.StatusCreated, gin.H{
 		"message": "User created successfully. Please login to continue",
 	})
 }

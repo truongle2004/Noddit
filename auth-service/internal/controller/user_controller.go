@@ -21,14 +21,6 @@ func (ctrl *UserController) RegisterRoutes(r *gin.Engine) {
 	v1 := r.Group(constant.V1 + "/users")
 	{
 		// v1.GET("/email/:email", ctrl.GetUserByEmail)
-		v1.DELETE("/", ctrl.DeleteUserById)
+		v1.DELETE("/", ctrl.userSvc.DeleteUserById)
 	}
-}
-
-// func (ctrl *UserController) GetUserByEmail(c *gin.Context) {
-// 	ctrl.userSvc.GetUserByEmail(c)
-// }
-
-func (ctrl *UserController) DeleteUserById(c *gin.Context) {
-	ctrl.userSvc.DeleteUserById(c)
 }
