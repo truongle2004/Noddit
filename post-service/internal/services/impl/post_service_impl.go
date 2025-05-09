@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/truongle2004/service-context/core"
 	"github.com/truongle2004/service-context/utils"
 )
 
@@ -20,7 +21,20 @@ func NewPostService(postRepository repositories.PostRepository) *PostServiceImpl
 	}
 }
 
-func (p *PostServiceImpl) Create(ctx *gin.Context, postDto *request.PostCreateDTO) {
+func (p *PostServiceImpl) Create(ctx *gin.Context) {
+
+	var postDto request.PostCreateDTO
+
+	if err := ctx.ShouldBindJSON(&postDto); err != nil {
+		ctx.Error(core.ErrBadRequest.WithDetail("error", err.Error()))
+		return
+	}
+
+	if err := postDto.Validate(); err != nil {
+		ctx.Error(core.ErrBadRequest.WithDetail("error", err.Error()))
+		return
+	}
+
 	post := models.Post{
 		Title:        postDto.Title,
 		Content:      postDto.Content,
