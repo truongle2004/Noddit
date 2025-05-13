@@ -20,6 +20,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Use(middleware.ResponseFormatterMiddleware())
 	r.Use(cors.New(config.CorsConfig()))
 
+	config.InitRBAC()
 	helper.InitJwtHelper()
 
 	if err := config.InitDB(); err != nil {

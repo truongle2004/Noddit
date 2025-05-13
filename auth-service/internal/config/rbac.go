@@ -3,10 +3,11 @@ package config
 import (
 	"auth-service/internal/environment"
 	"fmt"
-	"github.com/casbin/casbin/v2"
-	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"log"
 	"sync"
+
+	"github.com/casbin/casbin/v2"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
 )
 
 var (
@@ -33,7 +34,6 @@ func InitRBAC() error {
 			return
 		}
 
-		log.Println(environment.RbacPath)
 		e, err := casbin.NewEnforcer(environment.RbacPath, a)
 		if err != nil {
 			initErr = fmt.Errorf("❌ Failed to create Casbin enforcer: %v", err)
@@ -45,12 +45,12 @@ func InitRBAC() error {
 			return
 		}
 
-		log.Println("✅ Loaded Casbin policies successfully")
-
 		if err := e.SavePolicy(); err != nil {
 			initErr = fmt.Errorf("❌ Failed to save Casbin policy: %v", err)
 			return
 		}
+
+		log.Println("✅ Loaded Casbin policies successfully")
 
 		RbacEnforcer = e
 	})
