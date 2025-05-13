@@ -13,7 +13,6 @@ import (
 )
 
 var (
-	// CommunityDescription description community table
 	CommunityDescription = `
 			COMMENT ON TABLE communities IS 'Table for subreddit-style communities';
 			COMMENT ON COLUMN communities.name IS 'Unique URL slug (e.g., "golang", "movies")';
@@ -21,7 +20,6 @@ var (
 			COMMENT ON COLUMN communities.rules IS 'Optional posting rules stored as JSONB';
 			COMMENT ON COLUMN communities.member_count IS 'The number of members in the community.';
 		`
-	// CommunityMemberDescription description community_member table
 	CommunityMemberDescription = `
 			COMMENT ON TABLE community_members IS 'Table that records user memberships (follows) of communities';
 			COMMENT ON COLUMN community_members.joined_at IS 'Timestamp when the user joined the community';
@@ -34,10 +32,11 @@ var (
 			COMMENT ON COLUMN rules.position IS 'Rule position';
 	`
 
-	CommunityTopic = `
-			COMMENT ON TABLE topics IS 'Table that records topics for communities';
-			COMMENT ON COLUMN topics.name IS 'Topic name';
-	`
+	TopicDescription = `
+			COMMENT ON TABLE topics IS 'Table that stores content tags or categories used to classify posts';
+			COMMENT ON COLUMN topics.name IS 'Unique name identifying the topic (e.g., "programming", "science")';
+			COMMENT ON COLUMN topics.description IS 'Optional longer description for the topic';
+`
 )
 
 var (
@@ -61,14 +60,15 @@ func InitDB() error {
 			return
 		}
 
-		if err := db.AutoMigrate(&models.Community{}, &models.CommunityMember{}, &models.Rule{}); err != nil {
+		if err := db.AutoMigrate(&models.Community{}, &models.CommunityMember{}, &models.Rule{}, &models.Topic{}); err != nil {
 			initErr = fmt.Errorf("❌ Failed to auto migrate: %v", err)
 			return
 		}
 
 		db.Exec(CommunityDescription)
-
 		db.Exec(CommunityMemberDescription)
+		db.Exec(CommunityRule)
+		db.Exec(TopicDescription)
 
 		sqlDB, err := db.DB()
 		if err != nil {

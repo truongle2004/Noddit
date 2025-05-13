@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"subnoddit-service/internal/config"
 	"subnoddit-service/internal/environment"
+	"subnoddit-service/internal/seeds"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -22,6 +23,9 @@ func LoadConfig() {
 	}
 	if err := config.ImageUploadConfig(); err != nil {
 		log.Println("There are errors during creating new upload folder")
+	}
+	if err := seeds.SeedTopics(config.DbInstance); err != nil {
+		log.Fatalf("Failed to seed topics: %v", err)
 	}
 }
 

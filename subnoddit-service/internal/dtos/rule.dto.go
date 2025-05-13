@@ -3,6 +3,7 @@ package dtos
 import "fmt"
 
 type RuleDTO struct {
+	ID          string `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Position    int16  `json:"position"`
