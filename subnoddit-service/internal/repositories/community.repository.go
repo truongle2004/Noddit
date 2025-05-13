@@ -4,7 +4,7 @@ import (
 	"subnoddit-service/internal/domain/models"
 )
 
-type SubredditRepository interface {
+type CommunityRepository interface {
 	CreateCommunity(community *models.Community) error
 	UpdateCommunity(community *models.Community) error
 	GetCommunityByID(id *string) (*models.Community, error)
