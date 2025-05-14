@@ -92,7 +92,7 @@ func (u *AuthServiceImpl) Login(c *gin.Context) {
 		log.Printf("Failed to update last login: %v", err)
 	}
 
-	accessToken, refreshToken, err := helper.GenerateAccessTokenAndRefreshToken(user.ID, user.Email)
+	accessToken, refreshToken, err := helper.GenerateAccessTokenAndRefreshToken(user.Username, user.Email, user.ID)
 	if err != nil {
 		helper.ResponseServerError(c, "Generate token failed", err)
 		return

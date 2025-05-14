@@ -118,10 +118,11 @@ func generateAccessToken(userId string, email string) (string, error) {
 	return tokenString, nil
 }
 
-func generateRefreshToken(userId string, email string) (string, error) {
+func generateRefreshToken(username, userId, email string) (string, error) {
 	claims := jwt.MapClaims{
 		"userId": userId,
 		"email":  email,
+		"name":   username,
 		"exp":    time.Now().Add(time.Duration(refreshTokenExpire) * time.Hour).Unix(),
 		"iat":    time.Now().Unix(),
 	}
@@ -137,13 +138,13 @@ func generateRefreshToken(userId string, email string) (string, error) {
 
 }
 
-func GenerateAccessTokenAndRefreshToken(userId string, email string) (string, string, error) {
+func GenerateAccessTokenAndRefreshToken(name, userId, email string) (string, string, error) {
 	accessToken, err := generateAccessToken(userId, email)
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := generateRefreshToken(userId, email)
+	refreshToken, err := generateRefreshToken(name, userId, email)
 	if err != nil {
 		return "", "", err
 	}
@@ -151,16 +152,18 @@ func GenerateAccessTokenAndRefreshToken(userId string, email string) (string, st
 	return accessToken, refreshToken, nil
 }
 
-func getUserDataFromToken(token string, publicKey *ecdsa.PublicKey) (string, string, error) {
+func getUserDataFromToken(token string, publicKey *ecdsa.PublicKey) (string, string, string, error) {
 
 	claims, err := core.ValidateToken(token, publicKey)
 	if err != nil {
+		return "", "", "", err
 	}
 
+	name := (*claims)["name"].(string)
 	userId := (*claims)["userId"].(string)
 	email := (*claims)["email"].(string)
 
-	return userId, email, nil
+	return name, userId, email, nil
 }
 
 func RefreshToken(c *gin.Context) {
@@ -201,13 +204,13 @@ func RefreshToken(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, core.ErrBadRequest.WithError("Invalid platform"))
 	}
 
-	userId, email, err := getUserDataFromToken(token, publicKey)
+	name, userId, email, err := getUserDataFromToken(token, publicKey)
 	if err != nil {
 		ResponseServerError(c, "failed to get user data from token", err)
 		return
 	}
 
-	accessToken, refreshToken, err := GenerateAccessTokenAndRefreshToken(userId, email)
+	accessToken, refreshToken, err := GenerateAccessTokenAndRefreshToken(name, userId, email)
 	if err != nil {
 		ResponseServerError(c, "failed to generate access and refresh token", err)
 		return

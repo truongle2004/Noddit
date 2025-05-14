@@ -1,4 +1,4 @@
-SERVICES := gateway auth-service
+SERVICES := gateway auth-service subnoddit-service
 PRIMARY := config-server
 
 run:
