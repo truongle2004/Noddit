@@ -9,6 +9,7 @@ type CommunityRepository interface {
 	UpdateCommunity(community *models.Community) error
 	GetCommunityByID(id *string) (*models.Community, error)
 	ListCommunities() ([]models.Community, error)
+	GetAllCommunityByTopicId(id *string) ([]*models.Community, error)
 
 	GetNumberOfMembersInCommunity(communityId *string) (int64, error)
 	JoinCommunity(userID, communityID *string) error

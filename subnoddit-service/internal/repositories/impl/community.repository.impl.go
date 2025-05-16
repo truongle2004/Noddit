@@ -63,3 +63,18 @@ func (r *CommunityRepositoryImpl) GetNumberOfMembersInCommunity(communityID *str
 		Count(&count).Error
 	return count, err
 }
+
+func (r *CommunityRepositoryImpl) GetAllCommunityByTopicId(id *string) ([]*models.Community, error) {
+	var topics models.Topic
+	err := r.db.Preload("Communities.Topics").First(&topics, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var communities []*models.Community
+	for _, community := range topics.Communities {
+		communities = append(communities, community)
+	}
+
+	return communities, nil
+}

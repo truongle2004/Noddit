@@ -18,16 +18,16 @@ func NewCommunityController(subNodditSvc services.SubrodditService) CommunityCon
 func (a *CommunityController) RegisterRoutes(r *gin.Engine) {
 	api := r.Group(core.V1 + "/subnoddit-service")
 
-	// Community routes
 	community := api.Group("/communities")
 	{
-		community.POST("/create", a.communitySvc.CreateCommunity)
-		community.PUT("/update", a.communitySvc.UpdateCommunity)
-		community.GET("/:id", a.communitySvc.GetCommunityById)
+		community.POST("", a.communitySvc.CreateCommunity)
+		community.PUT("/", a.communitySvc.UpdateCommunity)
 		community.GET("", a.communitySvc.ListCommunities)
-		community.POST("/join", a.communitySvc.JoinCommunity)
-		community.POST("/leave", a.communitySvc.LeaveCommunity)
-		community.GET("/:id/member-count", a.communitySvc.GetCommunityMemberCount)
-		community.POST("/is-member", a.communitySvc.IsUserMember)
+		community.GET("/:id", a.communitySvc.GetCommunityById)
+		community.GET("/:id/topics", a.communitySvc.GetAllCommunityByTopic)
+		community.POST("/:id/members", a.communitySvc.JoinCommunity)
+		community.DELETE("/:id/members", a.communitySvc.LeaveCommunity)
+		community.GET("/:id/members/me", a.communitySvc.IsUserMember)
+		community.GET("/:id/members/count", a.communitySvc.GetCommunityMemberCount)
 	}
 }

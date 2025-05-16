@@ -5,11 +5,13 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"path"
 	"path/filepath"
 	"subnoddit-service/internal/constant"
 	"subnoddit-service/internal/domain/models"
 	"subnoddit-service/internal/dtos"
 	"subnoddit-service/internal/dtos/request"
+	"subnoddit-service/internal/environment"
 	"subnoddit-service/internal/helper"
 	"subnoddit-service/internal/repositories"
 	"sync"
@@ -253,4 +255,45 @@ func (s *CommunityServiceImpl) IsUserMember(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"is_member": isMember,
 	})
+}
+
+func (s *CommunityServiceImpl) GetAllCommunityByTopic(ctx *gin.Context) {
+	topicId := ctx.Param("id")
+	if topicId == "" {
+		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithDetail("error", "Topic ID is required"))
+		return
+	}
+
+	communities, err := s.communityDB.GetAllCommunityByTopicId(&topicId)
+	if err != nil {
+		ctx.Error(core.ErrInternalServerError.WithDetail("error", err.Error()))
+		return
+	}
+
+	var communityDtos []dtos.CommunityDto
+	for _, community := range communities {
+		// var topicDto []dtos.TopicDto
+		// for _, topic := range community.Topics {
+		// 	topicDto = append(topicDto, dtos.TopicDto{
+		// 		ID:          topic.ID,
+		// 		Name:        topic.Name,
+		// 		Description: topic.Description,
+		// 	})
+		// }
+
+		// banner_image := path.Join(environment.AppName+core.V1, *community.BannerImage)
+		icon_image := path.Join(core.V1+"/"+environment.AppName+"/image", *community.IconImage)
+
+		communityDtos = append(communityDtos, dtos.CommunityDto{
+			IconImage:   icon_image,
+			Name:        *community.Name,
+			Description: *community.Description,
+			// Topics:      topicDto,
+			ID:        community.ID,
+			CreatedAt: community.CreatedAt,
+			UpdatedAt: community.UpdatedAt,
+		})
+	}
+
+	ctx.JSON(http.StatusOK, communityDtos)
 }
