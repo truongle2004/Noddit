@@ -12,12 +12,12 @@ type CommunityDto struct {
 	Description string     `json:"description"`
 	Rules       []RuleDTO  `json:"rules"`
 	Type        string     `json:"type" binding:"omitempty,oneof=public private restricted"`
-	BannerImage string     `json:"banner_image"`
+	BannerImage string     `json:"banner_image,omitempty"`
 	IconImage   string     `json:"icon_image"`
 	CreatorId   string     `json:"creator_id"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
-	Topics      []TopicDto `json:"topics"`
+	Topics      []TopicDto `json:"topics,omitempty"`
 }
 
 func (r *CommunityDto) Validate() error {

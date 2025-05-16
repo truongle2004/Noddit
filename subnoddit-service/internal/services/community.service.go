@@ -9,6 +9,7 @@ type SubrodditService interface {
 	UpdateCommunity(ctx *gin.Context)
 	GetCommunityById(ctx *gin.Context)
 	ListCommunities(ctx *gin.Context)
+	GetAllCommunityByTopic(ctx *gin.Context)
 
 	JoinCommunity(ctx *gin.Context)
 	LeaveCommunity(ctx *gin.Context)

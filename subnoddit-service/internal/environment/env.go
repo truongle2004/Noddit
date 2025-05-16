@@ -26,11 +26,15 @@ var (
 	RedisDB   int
 )
 
+var (
+	AppName string
+)
+
 // LoadConfig load centralized configuration for the application
 func LoadConfig() {
 	v := viper.New()
 
-	AppName := os.Getenv("APP_NAME")
+	AppName = os.Getenv("APP_NAME")
 	AppProfile := os.Getenv("APP_PROFILE")
 	ConfigURL := os.Getenv("CONFIG_URL")
 
