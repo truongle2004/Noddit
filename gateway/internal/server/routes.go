@@ -45,36 +45,99 @@ func (s *Server) RegisterRoutes() http.Handler {
 	{
 		authGroup.Any("/auth/*proxyPath",
 			proxy.ReserveProxy(environment.AuthServiceRoute))
-
-		// authGroup.Any("/users/*proxyPath",
-		// 	middleware.AuthMiddleware(),
-		// 	middleware.ValidTokenMiddleware(),
-		// 	middleware.RBACMiddleware(rbacSvc),
-		// 	proxy.ReserveProxy(environment.AuthServiceRoute))
 	}
 
-	subnoddit := r.Group(constant.V1)
+	root := "/subnoddit-service"
+	subnoddit := r.Group(constant.V1 + root)
 	{
-		subnoddit.Any("/subnoddit-service/communities/*proxyPath",
+		// Create community
+		subnoddit.POST("/communities",
 			middleware.AuthMiddleware(),
 			middleware.ValidTokenMiddleware(),
-			//middleware.RBACMiddleware(rbacSvc),
-			proxy.ReserveProxy(environment.SubnodditServiceRoute))
-		subnoddit.Any("/subnoddit-service/image/*proxyPath",
-			proxy.ReserveProxy(environment.SubnodditServiceRoute))
+			proxy.ReserveProxy(environment.SubnodditServiceRoute),
+		)
 
-		subnoddit.Any("/subnoddit-service/topics/*proxyPath",
-			proxy.ReserveProxy(environment.SubnodditServiceRoute))
-
-	}
-
-	profileGroup := r.Group(constant.V1)
-	{
-		profileGroup.Any("/profile-service/*proxyPath",
+		// Update community (requires ID)
+		subnoddit.PUT("/communities/:id",
 			middleware.AuthMiddleware(),
 			middleware.ValidTokenMiddleware(),
-			//middleware.RBACMiddleware(rbacSvc),
-			proxy.ReserveProxy(environment.ProfileServiceRoute))
+			proxy.ReserveProxy(environment.SubnodditServiceRoute),
+		)
+
+		// Get all topics in community
+		subnoddit.GET("/communities/:id/topics",
+			proxy.ReserveProxy(environment.SubnodditServiceRoute),
+		)
+
+		// Get community by ID
+		subnoddit.GET("/communities/:id",
+			proxy.ReserveProxy(environment.SubnodditServiceRoute),
+		)
+
+		// List all communities
+		subnoddit.GET("/communities",
+			proxy.ReserveProxy(environment.SubnodditServiceRoute),
+		)
+
+		// Join community
+		subnoddit.POST("/communities/:id/members",
+			middleware.AuthMiddleware(),
+			middleware.ValidTokenMiddleware(),
+			proxy.ReserveProxy(environment.SubnodditServiceRoute),
+		)
+
+		// Leave community
+		subnoddit.DELETE("/communities/:id/members",
+			middleware.AuthMiddleware(),
+			middleware.ValidTokenMiddleware(),
+			proxy.ReserveProxy(environment.SubnodditServiceRoute),
+		)
+
+		// Check membership
+		subnoddit.GET("/communities/:id/members/me",
+			middleware.AuthMiddleware(),
+			middleware.ValidTokenMiddleware(),
+			proxy.ReserveProxy(environment.SubnodditServiceRoute),
+		)
+
+		// Get member count
+		subnoddit.GET("/communities/:id/members/count",
+			proxy.ReserveProxy(environment.SubnodditServiceRoute),
+		)
+
+		subnoddit.POST("/image/upload",
+			middleware.AuthMiddleware(),
+			middleware.ValidTokenMiddleware(),
+			proxy.ReserveProxy(environment.SubnodditServiceRoute),
+		)
+
+		subnoddit.GET("/image/:filename",
+			proxy.ReserveProxy(environment.SubnodditServiceRoute))
+
+		// get all topics
+		subnoddit.GET("/topics",
+			proxy.ReserveProxy(environment.SubnodditServiceRoute))
+
+		// get topic by ID
+		subnoddit.GET("/topics/:id",
+			proxy.ReserveProxy(environment.SubnodditServiceRoute))
+
+		// create new topic
+		subnoddit.POST("/topics",
+			middleware.AuthMiddleware(),
+			middleware.ValidTokenMiddleware(),
+			proxy.ReserveProxy(environment.SubnodditServiceRoute))
+
+		// update topic
+		subnoddit.PUT("/topics/:id",
+			proxy.ReserveProxy(environment.SubnodditServiceRoute))
+
+		// delete topic
+		subnoddit.DELETE("/topics/:id",
+			middleware.AuthMiddleware(),
+			middleware.ValidTokenMiddleware(),
+			proxy.ReserveProxy(environment.SubnodditServiceRoute))
+
 	}
 
 	return r
