@@ -223,7 +223,7 @@ func (u *AuthServiceImpl) CheckUsername(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func (u *AuthServiceImpl) CheckEmail(c *gin.Context) {
@@ -242,7 +242,7 @@ func (u *AuthServiceImpl) CheckEmail(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{})
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 func (u *AuthServiceImpl) RefreshToken(ctx *gin.Context) {
