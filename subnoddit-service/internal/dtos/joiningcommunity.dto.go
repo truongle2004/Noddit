@@ -1,16 +1,16 @@
-package request
+package dtos
 
 import (
 	"fmt"
 	"strings"
 )
 
-type LeaveCommunityRequest struct {
+type JoinCommunityRequest struct {
 	CommunityID string `json:"community_id"`
 	UserID      string `json:"user_id"`
 }
 
-func (r *LeaveCommunityRequest) Validate() error {
+func (r *JoinCommunityRequest) Validate() error {
 	var validationErrors []string
 
 	if strings.TrimSpace(r.CommunityID) == "" {

@@ -19,7 +19,7 @@ func SaveImageToFolder(ctx *gin.Context, image *multipart.FileHeader, dst string
 // CheckExtension checks if the extension of the image is valid
 func CheckExtension(ext string) (string, error) {
 	if ext != ".jpg" && ext != ".png" && ext != ".jpeg" {
-		return "", errors.New("Type of image should be jpg, png, jpeg")
+		return "", errors.New("type of image should be jpg, png, jpeg")
 	}
 	return ext, nil
 }
