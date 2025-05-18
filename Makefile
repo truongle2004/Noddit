@@ -1,4 +1,4 @@
-SERVICES := gateway auth-service subnoddit-service
+SERVICES := gateway auth-service
 PRIMARY := config-server
 
 run:
@@ -9,7 +9,7 @@ run:
 	echo "==> Starting other services..."; \
 	for svc in $(SERVICES); do \
 		echo "==> Starting $$svc"; \
-		make -C $$svc run & \
+		make -C $$svc watch & \
 	done; \
 	trap "echo 'Shutting down...'; kill $$PRIMARY_PID; kill 0" SIGINT SIGTERM; \
 	wait

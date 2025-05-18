@@ -10,7 +10,6 @@ import (
 	"subnoddit-service/internal/constant"
 	"subnoddit-service/internal/domain/models"
 	"subnoddit-service/internal/dtos"
-	"subnoddit-service/internal/dtos/request"
 	"subnoddit-service/internal/environment"
 	"subnoddit-service/internal/helper"
 	"subnoddit-service/internal/repositories"
@@ -54,7 +53,7 @@ func (s *CommunityServiceImpl) CreateCommunity(ctx *gin.Context) {
 	for _, id := range topicIds {
 		val, err := s.topicDB.GetTopicByID(&id)
 		if err != nil {
-			log.Println(fmt.Sprintf("Topic with id %s not found", id))
+			log.Println(fmt.Sprintf("topic with id %s not found", id))
 			continue
 		}
 
@@ -134,15 +133,14 @@ func (s *CommunityServiceImpl) CreateCommunity(ctx *gin.Context) {
 		topicDtos = append(topicDtos, topicDto)
 	}
 
-	// FIXME: the banner and icon path should be refactor to be full path
 	communityDto := dtos.CommunityDto{
 		ID:          community.ID,
-		Name:        *community.Name,
-		Description: *community.Description,
-		Type:        *community.Type,
-		CreatorId:   *community.CreatorID,
-		BannerImage: *community.BannerImage,
-		IconImage:   *community.IconImage,
+		Name:        community.Name,
+		Description: community.Description,
+		Type:        community.Type,
+		CreatorId:   community.CreatorID,
+		BannerImage: &bannerFileName,
+		IconImage:   &iconFileName,
 		Topics:      topicDtos,
 	}
 
@@ -150,7 +148,7 @@ func (s *CommunityServiceImpl) CreateCommunity(ctx *gin.Context) {
 }
 
 func (s *CommunityServiceImpl) UpdateCommunity(ctx *gin.Context) {
-	var req request.UpdateCommunityRequest
+	var req dtos.UpdateCommunityRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithDetail("error", "Invalid request body"))
 		return
@@ -177,12 +175,50 @@ func (s *CommunityServiceImpl) GetCommunityById(ctx *gin.Context) {
 		return
 	}
 	community, err := s.communityDB.GetCommunityByID(&id)
+
+	type UserInfo struct {
+		Username string
+		Email    string
+	}
+
+	var userDto *dtos.UserDto
+
+	if community.CreatorID != nil {
+		userDto, err = s.communityDB.GetUserInfoByUserID(community.CreatorID)
+	}
+
+	var topicDtos []dtos.TopicDto
+
+	if len(community.Topics) > 0 {
+		for _, topic := range community.Topics {
+			topicDto := dtos.TopicDto{
+				ID:          topic.ID,
+				Name:        topic.Name,
+				Description: topic.Description,
+			}
+			topicDtos = append(topicDtos, topicDto)
+		}
+	}
+
+	communityDto := dtos.CommunityDto{
+		ID:          community.ID,
+		Name:        community.Name,
+		Description: community.Description,
+		Type:        community.Type,
+		CreatorId:   community.CreatorID,
+		BannerImage: community.BannerImage,
+		IconImage:   community.IconImage,
+		CreatedAt:   &community.CreatedAt,
+		CreatorName: &userDto.Username,
+		Topics:      topicDtos,
+	}
+
 	if err != nil {
 		ctx.Error(core.ErrInternalServerError.WithDetail("error", err.Error()))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, community)
+	ctx.JSON(http.StatusOK, communityDto)
 }
 
 func (s *CommunityServiceImpl) ListCommunities(ctx *gin.Context) {
@@ -196,7 +232,7 @@ func (s *CommunityServiceImpl) ListCommunities(ctx *gin.Context) {
 }
 
 func (s *CommunityServiceImpl) JoinCommunity(ctx *gin.Context) {
-	var req request.JoinCommunityRequest
+	var req dtos.JoinCommunityRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithDetail("error", "Invalid request body"))
 		return
@@ -210,7 +246,7 @@ func (s *CommunityServiceImpl) JoinCommunity(ctx *gin.Context) {
 }
 
 func (s *CommunityServiceImpl) LeaveCommunity(ctx *gin.Context) {
-	var req request.LeaveCommunityRequest
+	var req dtos.LeaveCommunityRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithDetail("error", "Invalid request body"))
 		return
@@ -241,7 +277,7 @@ func (s *CommunityServiceImpl) GetCommunityMemberCount(ctx *gin.Context) {
 
 func (s *CommunityServiceImpl) IsUserMember(ctx *gin.Context) {
 
-	var req request.IsUserMemberRequest
+	var req dtos.IsUserMemberRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithDetail("error", "Invalid request body"))
 		return
@@ -272,26 +308,25 @@ func (s *CommunityServiceImpl) GetAllCommunityByTopic(ctx *gin.Context) {
 
 	var communityDtos []dtos.CommunityDto
 	for _, community := range communities {
-		// var topicDto []dtos.TopicDto
-		// for _, topic := range community.Topics {
-		// 	topicDto = append(topicDto, dtos.TopicDto{
-		// 		ID:          topic.ID,
-		// 		Name:        topic.Name,
-		// 		Description: topic.Description,
-		// 	})
-		// }
 
-		// banner_image := path.Join(environment.AppName+core.V1, *community.BannerImage)
-		icon_image := path.Join(core.V1+"/"+environment.AppName+"/image", *community.IconImage)
+		var banner_image string
+		var icon_image string
+
+		if community.BannerImage != nil {
+			banner_image = path.Join(environment.AppName+core.V1, *community.BannerImage)
+		}
+		if community.IconImage != nil {
+			icon_image = path.Join(environment.AppName+core.V1, *community.IconImage)
+		}
 
 		communityDtos = append(communityDtos, dtos.CommunityDto{
-			IconImage:   icon_image,
-			Name:        *community.Name,
-			Description: *community.Description,
-			// Topics:      topicDto,
-			ID:        community.ID,
-			CreatedAt: community.CreatedAt,
-			UpdatedAt: community.UpdatedAt,
+			IconImage:   &icon_image,
+			BannerImage: &banner_image,
+			Name:        community.Name,
+			Description: community.Description,
+			ID:          community.ID,
+			CreatedAt:   &community.CreatedAt,
+			UpdatedAt:   &community.UpdatedAt,
 		})
 	}
 

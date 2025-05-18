@@ -2,6 +2,7 @@ package impl
 
 import (
 	"subnoddit-service/internal/domain/models"
+	"subnoddit-service/internal/dtos"
 
 	"gorm.io/gorm"
 )
@@ -24,7 +25,7 @@ func (r *CommunityRepositoryImpl) UpdateCommunity(community *models.Community) e
 
 func (r *CommunityRepositoryImpl) GetCommunityByID(id *string) (*models.Community, error) {
 	var community models.Community
-	err := r.db.Where("id = ?", &id).First(&community).Error
+	err := r.db.Preload("Topics").Where("id = ?", &id).First(&community).Error
 	return &community, err
 }
 
@@ -77,4 +78,12 @@ func (r *CommunityRepositoryImpl) GetAllCommunityByTopicId(id *string) ([]*model
 	}
 
 	return communities, nil
+}
+
+func (r *CommunityRepositoryImpl) GetUserInfoByUserID(userID *string) (*dtos.UserDto, error) {
+	var userInfo dtos.UserDto
+
+	err := r.db.Raw("SELECT u.id, u.username, u.email FROM users u WHERE u.id = ?", userID).Scan(&userInfo).Error
+	return &userInfo, err
+
 }
