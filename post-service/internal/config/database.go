@@ -34,7 +34,7 @@ func InitDB() error {
 			return
 		}
 
-		if err := db.AutoMigrate(&models.Post{}); err != nil {
+		if err := db.AutoMigrate(&models.Post{}, &models.PostImage{}); err != nil {
 			initErr = fmt.Errorf("❌ Failed to auto migrate: %v", err)
 			return
 		}

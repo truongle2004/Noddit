@@ -166,5 +166,8 @@ func PostServiceRoutes(r *gin.Engine) {
 			middleware.ValidTokenMiddleware(),
 			middleware.AccountMiddleware(),
 			proxy.ReserveProxy(environment.PostServiceRoute))
+
+		post.GET("/image/:filename",
+			proxy.ReserveProxy(environment.PostServiceRoute))
 	}
 }

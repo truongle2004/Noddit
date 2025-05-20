@@ -3,6 +3,7 @@ package server
 import (
 	"blog-service/internal/environment"
 	"fmt"
+	"github.com/truongle2004/service-context/logger"
 	"net/http"
 	"time"
 
@@ -15,6 +16,8 @@ type Server struct {
 
 func NewServer() *http.Server {
 	environment.LoadConfig()
+
+	logger.Infof("Server is running in post: %d", environment.PORT)
 
 	NewServer := &Server{
 		port: environment.PORT,
