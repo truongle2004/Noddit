@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"gateway/internal/helper"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,8 @@ func ValidTokenMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		log.Println("claims: ", claims)
 
 		exp := (*claims)["exp"].(float64)
 		iat := (*claims)["iat"].(float64)

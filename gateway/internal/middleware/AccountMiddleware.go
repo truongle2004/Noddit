@@ -1,35 +1,29 @@
 package middleware
 
 import (
-	"gateway/internal/services"
-
+	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/truongle2004/service-context/core"
+	"github.com/truongle2004/service-context/redisclient"
+	"log"
+	"net/http"
 )
 
-type AccountMiddleware struct {
-	redis services.RedisService
-}
-
-func NewAccountMiddleware(redis services.RedisService) *AccountMiddleware {
-	return &AccountMiddleware{
-		redis: redis,
-	}
-}
-
-func (am *AccountMiddleware) AccountMiddleware() gin.HandlerFunc {
+func AccountMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email, _ := c.Get("email")
+		log.Println("email: ", email)
 
-		accountStatus, err := am.redis.Get(c, email.(string))
-		if err != nil {
-			c.AbortWithStatusJSON(500, gin.H{"error": err.Error()})
+		accountStatus, err := redisclient.Get(c, email.(string))
+		if errors.Is(err, redis.Nil) {
+			c.AbortWithStatusJSON(http.StatusForbidden, core.ErrForbidden.WithError("Account user not found. Please contact admin or try again later"))
 			return
 		}
 
 		// The account status should be active
 		if accountStatus != string(core.ACTIVE) {
-			c.AbortWithStatusJSON(403, gin.H{"error": "Your account is not active or blocked by admin, please contact admin for more information"})
+			c.AbortWithStatusJSON(http.StatusForbidden, core.ErrForbidden.WithError("Account user is not active. Please contact admin or try again later"))
 			return
 		}
 
