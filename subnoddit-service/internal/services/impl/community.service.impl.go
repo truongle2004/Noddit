@@ -18,6 +18,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/truongle2004/service-context/core"
+	"github.com/truongle2004/service-context/utils"
 )
 
 type CommunityServiceImpl struct {
@@ -104,8 +105,8 @@ func (s *CommunityServiceImpl) CreateCommunity(ctx *gin.Context) {
 		wg.Add(1)
 		go func(file *multipart.FileHeader, path string) {
 			defer wg.Done() // ensure Done is always called
-			dst := helper.GenerateDst(constant.UploadImagePath, bannerFileName)
-			if err := helper.SaveImageToFolder(ctx, file, dst); err != nil {
+			dst := utils.GenerateDst(constant.UploadImagePath, bannerFileName)
+			if err := utils.SaveImageToFolder(ctx, dst, file); err != nil {
 				log.Println("Failed to save banner:", err)
 			}
 		}(bannerFile, bannerFileName)
@@ -115,8 +116,8 @@ func (s *CommunityServiceImpl) CreateCommunity(ctx *gin.Context) {
 		wg.Add(1)
 		go func(file *multipart.FileHeader, path string) {
 			defer wg.Done()
-			dst := helper.GenerateDst(constant.UploadImagePath, iconFileName)
-			if err := helper.SaveImageToFolder(ctx, file, dst); err != nil {
+			dst := utils.GenerateDst(constant.UploadImagePath, iconFileName)
+			if err := utils.SaveImageToFolder(ctx, dst, file); err != nil {
 				log.Println("Failed to save icon:", err)
 			}
 		}(iconFile, iconFileName)

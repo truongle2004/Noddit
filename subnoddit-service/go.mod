@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/joho/godotenv v1.5.1
 	github.com/spf13/viper v1.20.1
-	github.com/truongle2004/service-context v1.0.32
+	github.com/truongle2004/service-context v1.0.39
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.25.12
 )

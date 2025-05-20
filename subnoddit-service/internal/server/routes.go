@@ -30,8 +30,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	communityCtrl := controller.NewCommunityController(communitySvc)
 	communityCtrl.RegisterRoutes(r)
 
-	topicSerivce := svc.NewTopicService(topicRepo)
-	topicCtrl := controller.NewTopicController(topicSerivce)
+	topicSvc := svc.NewTopicService(topicRepo)
+	topicCtrl := controller.NewTopicController(topicSvc)
 	topicCtrl.RegisterRoutes(r)
 
 	return r
