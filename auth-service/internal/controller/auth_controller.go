@@ -16,7 +16,7 @@ func NewAuthController(authService services.AuthService) *AuthController {
 }
 
 func (a *AuthController) RegisterRoutes(c *gin.Engine) {
-	v1 := c.Group(constant.V1 + "/auth")
+	v1 := c.Group(constant.V1 + "/auth-service")
 	{
 		v1.POST("/register", a.AuthSvc.Register)
 		v1.POST("/login", a.AuthSvc.Login)
