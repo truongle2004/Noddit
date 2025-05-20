@@ -5,7 +5,7 @@ import (
 )
 
 type PostService interface {
-	Create(c *gin.Context)
+	CreateNewPost(c *gin.Context)
 	// Delete(id string)
 	// Update()
 	// Get()
