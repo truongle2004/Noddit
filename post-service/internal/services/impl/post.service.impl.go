@@ -6,6 +6,7 @@ import (
 	"blog-service/internal/dtos"
 	"blog-service/internal/enums"
 	"blog-service/internal/repositories"
+	utils2 "blog-service/internal/utils"
 	"github.com/gosimple/slug"
 	"github.com/truongle2004/service-context/core"
 	"github.com/truongle2004/service-context/logger"
@@ -117,7 +118,7 @@ func (p *PostServiceImpl) CreateNewPost(ctx *gin.Context) {
 			}
 		}
 
-		postDto.ImageUrls = listImageUrl
+		postDto.ImageUrls = &listImageUrl
 		break
 	case enums.PostTypeText:
 		// do something
@@ -128,4 +129,45 @@ func (p *PostServiceImpl) CreateNewPost(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, postDto)
+}
+
+func (p *PostServiceImpl) GetAllPostsByCommunityId(ctx *gin.Context) {
+	communityId := ctx.Param("id")
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+
+	if communityId == "" {
+		ctx.JSON(http.StatusBadRequest, core.ErrBadRequest.WithDetail("error", "community_id is required"))
+		return
+	}
+
+	pa := utils2.Pagination{
+		Page:  page,
+		Limit: limit,
+	}
+
+	postDtos, total, err := p.postRepo.GetAllPostsByCommunityId(ctx, communityId, pa)
+	if err != nil {
+		logger.Errorf("failed to get all posts: %v", err.Error())
+		ctx.JSON(http.StatusInternalServerError, core.ErrInternalServerError.WithDetail("error", err.Error()))
+		return
+	}
+
+	for _, post := range postDtos {
+		urls, _ := p.postRepo.GetAllImageUrlByPostId(ctx, *post.ID)
+		var listImageUrl []string
+		for _, imageUrl := range urls {
+			urlProcessing := "http://localhost:8081/api/v1/post-service/image" + *imageUrl.ImageURL
+			listImageUrl = append(listImageUrl, urlProcessing)
+		}
+
+		post.ImageUrls = &listImageUrl
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"page":  pa.Page,
+		"limit": pa.Limit,
+		"total": total,
+		"posts": postDtos,
+	})
 }

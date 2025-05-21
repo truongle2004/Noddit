@@ -19,5 +19,6 @@ func (a *PostController) RegisterRoutes(r *gin.Engine) {
 	v1 := r.Group(core.V1 + "/post-service")
 	{
 		v1.POST("/create", a.PostSvc.CreateNewPost)
+		v1.GET("/:id", a.PostSvc.GetAllPostsByCommunityId)
 	}
 }

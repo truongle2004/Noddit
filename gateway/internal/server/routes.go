@@ -169,5 +169,7 @@ func PostServiceRoutes(r *gin.Engine) {
 
 		post.GET("/image/:filename",
 			proxy.ReserveProxy(environment.PostServiceRoute))
+
+		post.GET("/:id", proxy.ReserveProxy(environment.PostServiceRoute))
 	}
 }

@@ -6,8 +6,5 @@ import (
 
 type PostService interface {
 	CreateNewPost(c *gin.Context)
-	// Delete(id string)
-	// Update()
-	// Get()
-	// GetAll()
+	GetAllPostsByCommunityId(c *gin.Context)
 }
